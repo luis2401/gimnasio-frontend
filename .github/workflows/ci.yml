@@ -1,0 +1,56 @@
+name: CI Pipeline - Gimnasio Frontend
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master", "develop" ]
+
+jobs:
+  lint-and-build:
+    name: Lint & Build Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Configurar Node.js (v22)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: 📦 Instalar dependencias limpias
+        run: npm ci
+
+      - name: 🔍 Ejecutar linter (análisis de código)
+        run: npm run lint
+
+      - name: 🏗️ Compilar el proyecto (Vite Build)
+        run: npm run build
+
+      - name: 📁 Subir artefactos compilados (opcional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-build
+          path: dist/
+
+  docker-build:
+    name: Verificar construcción de Imagen Docker
+    needs: lint-and-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐳 Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔨 Probar compilación del Dockerfile
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
