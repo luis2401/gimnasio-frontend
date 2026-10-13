@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import MenuUsuario from "../componentes/MenuUsuario";
 
 function Reportes({ usuario, onVolver, onCerrarSesion }) {
@@ -8,7 +8,7 @@ function Reportes({ usuario, onVolver, onCerrarSesion }) {
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
 
-  const obtenerReporte = async () => {
+  const obtenerReporte = useCallback(async () => {
     setCargando(true);
     setMensaje("");
 
@@ -35,13 +35,13 @@ function Reportes({ usuario, onVolver, onCerrarSesion }) {
     } finally {
       setCargando(false);
     }
-  };
+  }, [usuario.token]);
 
   useEffect(() => {
     if (usuario.rol === "ADMIN") {
       obtenerReporte();
     }
-  }, [usuario.token, usuario.rol]);
+  }, [usuario.rol, obtenerReporte]);
 
   if (usuario.rol !== "ADMIN") {
     return <p>No tienes permisos para consultar reportes.</p>;
